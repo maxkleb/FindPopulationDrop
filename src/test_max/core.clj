@@ -4,18 +4,20 @@
 
 (defn get-next-element [n]
     (let [element (second n)]
-        (if (and (not (nil? (first element)))
-                 (not (nil? (second element)))
-                 (> (Integer/parseInt (get (first element) "value"))
-                    (Integer/parseInt (get (second element) "value")))
-                 )
-            [(get (second element) "year")
-             (get (second element) "level_1")
-             (get (second element) "level_2")]
-
-            )))
+        (remove nil? (map
+             (fn [k] (if (and (not (nil? (first k)))
+                              (not (nil? (second k)))
+                              (> (Integer/parseInt (get (first k) "value"))
+                                 (Integer/parseInt (get (second k) "value")))
+                              )
+                         [(get (second k) "year")
+                          (get (second k) "level_1")
+                          (get (second k) "level_2")]
+                         ))
+             (map #(conj %) (partition 2 1 element))))
+        ))
 
 (defn -main []
     (let [res (json/read-str (slurp "resources/input.json"))
           data (group-by #(select-keys % ["level_1" "level_2"]) res)]
-        (remove empty? (map get-next-element data))))
+        (remove nil? (map get-next-element data))))
